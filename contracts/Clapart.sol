@@ -21,8 +21,8 @@ Clapart functions:
     - convert subtoken to subtoken
     - convert token to subtoken
     - convert subtoken to token
-
 */
+
 contract Clapart is Ownable, Stakeable, Lockable {
 
 // Types
@@ -60,7 +60,7 @@ contract Clapart is Ownable, Stakeable, Lockable {
         balances[msg.sender]  = totalSupply_;
         decimals_             = 18;
         symbol_               = "CLPX"; // we need to decide this
-        name_                 = "Clap Art";
+        name_                 = "Clap Art Token";
     }
 
     // retuns the total supply

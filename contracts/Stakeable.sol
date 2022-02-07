@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "./Ownable.sol";
+import "./SafeMath.sol";
+
 /**
 * @notice Stakeable is a contract who is ment to be inherited by other contract that wants Staking capabilities
 */
-contract Stakeable {
-
+contract Stakeable is Ownable{
+    // we don't want to have any security issues
+    using SafeMath for uint256;
 
     /**
     * @notice Constructor since this contract is not ment to be used without inheritance
@@ -16,10 +20,11 @@ contract Stakeable {
         stakeholders.push();
 
         // populate rewards
-        _rewards.push(uint(1012783)); // 15.34 per year means 1.2783 % per month means 1.012783 factor
-        _rewards.push(uint(1017708)); // 21.25 per year means 1.7708 % per month means 1.017708 factor
-        _rewards.push(uint(1024733)); // 29.68 per year means 2.4733 % per month means 1.024733 factor
-        _rewards.push(uint(1033800)); // 40.56 per year means 3.3800 % per month means 1.033800 factor
+        _rewards.push(uint(200)); // 2.00% per month
+        _rewards.push(uint(300)); // 3.00% per month
+        _rewards.push(uint(500)); // 5.00% per month
+        _rewards.push(uint(700)); // 7.00% per month
+        _rewards.push(uint(900)); // 8.00%s per month
 
         // populate periods with monts
         _periods.push(uint(1));
@@ -79,10 +84,24 @@ contract Stakeable {
     event Staked(address indexed user, uint256 amount, uint256 index, uint256 timestamp);
 
     /**
+    * @notice getReward will get the reward value for a specific period
+     */
+    function getReward(uint8 index) public view returns (uint) {
+        return _rewards[index];
+    }
+
+    /**
+    * @notice setReward will set a specific value for index
+     */
+    function setReward(uint8 index, uint value) external onlyOwner{
+        _rewards[index] = value;
+    }
+
+    /**
     * @notice getRewards will get the reward value for a specific period
      */
-    function getRewards(uint8 index) public view returns (uint) {
-        return _rewards[index];
+    function getRewards() public view returns (uint[] memory) {
+        return _rewards;
     }
 
     /**
@@ -90,6 +109,20 @@ contract Stakeable {
      */
     function getPeriod(uint8 index) public view returns (uint) {
         return _periods[index];
+    }
+
+    /**
+    * @notice setPeriod will get the period in months for a specific index
+     */
+    function setPeriod(uint8 index, uint value) external onlyOwner{
+        _periods[index] = value;
+    }
+
+    /**
+    * @notice getPeriods willreturn all periods
+     */
+    function getPeriods() public view returns (uint[] memory) {
+        return _periods;
     }
 
     /**
@@ -140,16 +173,26 @@ contract Stakeable {
     /**
       * @notice
       * calculateStakeReward is used to calculate how much a user should be rewarded for their stakes
-      * and the duration the stake has been active
+      * for the duration of the stake
      */
     function calculateStakeReward(Stake memory _current_stake) internal view returns(uint256){
         // first we check if we have the right to withdraw the stake by period
         
         uint8 periodIndex = _current_stake.period;
-        uint reward = getRewards(periodIndex);
+        uint reward = getReward(periodIndex);
         uint period = getPeriod(periodIndex);
 
-        return (_current_stake.amount*reward*period)/1000000 - _current_stake.amount;
+        require (period>0, "We cannot stake for a 0 period");
+        require (reward>0, "We cannot stake for 0 reward");
+
+        uint256 divStake = _current_stake.amount.div(100);
+        uint256 divReward = reward.div(100);
+
+        uint256 stakeReward = divStake.mul(divReward).mul(period);
+
+        require (stakeReward>0, "The reward is 0 (not ok)");
+
+        return stakeReward;
     }
 
     /**
