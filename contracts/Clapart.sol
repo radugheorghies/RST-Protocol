@@ -225,7 +225,7 @@ contract Clapart is Ownable, Stakeable {
 
     // sell order
     function sell(string calldata subtoken, uint256 price, uint256 volume) external {
-        require(subtokenBalances[msg.sender][subtoken][price]>volume, "You cannot sell that much.");
+        require(subtokenBalances[msg.sender][subtoken]>volume, "You cannot sell that much.");
         mainTokenOrderbook[subtoken][price].add(volume);
         balances[msg.sender].add(price*volume);
         subtokenBalances[msg.sender][subtoken].sub(volume);
@@ -240,8 +240,8 @@ contract Clapart is Ownable, Stakeable {
     // LOCKABLE
         // user can lock founds
     function LockFounds(uint256 amount, uint period) public{
-        require(balance[msg.sender]>amount, "You cannot lock more than you have");
-        balance[msg.sender].sub(amount);
+        require(balances[msg.sender]>amount, "You cannot lock more than you have");
+        balances[msg.sender].sub(amount);
         lockedBalance[msg.sender].add(amount);
         userLocks[msg.sender].Push(Lock(amount, period, block.timestamp));
         emit LokedSuccesfull(msg.sender, amount, period);
@@ -249,7 +249,7 @@ contract Clapart is Ownable, Stakeable {
 
     // user cand unlock founds
     function UnlockFounds(uint index) public {
-        Lock user_lock = userLocks[msg.sender].locks[index];
+        Lock memory user_lock = userLocks[msg.sender].locks[index];
         require (user_lock.amount>0, "Nothing to unlock");
 
         // now checking the periods
@@ -259,7 +259,7 @@ contract Clapart is Ownable, Stakeable {
 
         require (stakeAge >= period, "You can't unlock now.");
 
-        balance[msg.sender].add(user_lock.amount);
+        balances[msg.sender].add(user_lock.amount);
         userLocks[msg.sender].locks[index] = 0;
         
         emit UnlokedSuccesfull(msg.sender, user_lock.amount, period);
@@ -267,7 +267,7 @@ contract Clapart is Ownable, Stakeable {
 
     // owner cand unlock founds for user
     function UnlockFoundsTo(address to, uint index) public onlyOwner{
-        Lock user_lock = userLocks[to].locks[index];
+        Lock memory user_lock = userLocks[to].locks[index];
         require (user_lock.amount>0, "Nothing to unlock");
 
         // now checking the periods
@@ -277,7 +277,7 @@ contract Clapart is Ownable, Stakeable {
 
         require (stakeAge >= period, "You can't unlock now.");
 
-        balance[to].add(user_lock.amount);
+        balances[to].add(user_lock.amount);
         userLocks[to].locks[index] = 0;
         
         emit UnlokedSuccesfull(to, user_lock.amount, period);
