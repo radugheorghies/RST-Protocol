@@ -243,7 +243,7 @@ contract Clapart is Ownable, Stakeable {
         require(balances[msg.sender]>amount, "You cannot lock more than you have");
         balances[msg.sender].sub(amount);
         lockedBalance[msg.sender].add(amount);
-        userLocks[msg.sender].Push(Lock(amount, period, block.timestamp));
+        userLocks[msg.sender].locks.push(Lock(amount, period, block.timestamp));
         emit LokedSuccesfull(msg.sender, amount, period);
     }
 
@@ -260,7 +260,7 @@ contract Clapart is Ownable, Stakeable {
         require (stakeAge >= period, "You can't unlock now.");
 
         balances[msg.sender].add(user_lock.amount);
-        userLocks[msg.sender].locks[index] = 0;
+        userLocks[msg.sender].locks[index].amount = 0;
         
         emit UnlokedSuccesfull(msg.sender, user_lock.amount, period);
     }
@@ -278,7 +278,7 @@ contract Clapart is Ownable, Stakeable {
         require (stakeAge >= period, "You can't unlock now.");
 
         balances[to].add(user_lock.amount);
-        userLocks[to].locks[index] = 0;
+        userLocks[to].locks[index].amount = 0;
         
         emit UnlokedSuccesfull(to, user_lock.amount, period);
     }
