@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import "./Ownable.sol";
 import "./Stakeable.sol";
-import "./Lockable.sol";
 import "./SafeMath.sol";
 
 /*
@@ -23,7 +22,7 @@ Clapart functions:
     - convert subtoken to token
 */
 
-contract Clapart is Ownable, Stakeable, Lockable {
+contract Clapart is Ownable, Stakeable {
 
 // Types
 
